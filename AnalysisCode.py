@@ -17,7 +17,6 @@ from skimage.morphology import watershed
 from skimage.feature import peak_local_max
 from scipy import ndimage as ndi
 from scipy.stats import chisquare, mode, pearsonr, gaussian_kde
-from terminaltables import AsciiTable
 from matplotlib.colors import LogNorm
 
 def normalize(L):

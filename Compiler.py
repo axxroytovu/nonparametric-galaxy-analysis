@@ -7,11 +7,10 @@ from random import sample
 import numpy as np
 import numpy.ma as ma
 from AnalysisCode import *
+from terminaltables import AsciiTable
 
 
-def SingleGalaxy(GalaxyNumber):
-	DataDirectory = r'/Users/samzimmerman/Documents/Capstone/Data/GDS_deep10_13/'
-
+def SingleGalaxy(GalaxyNumber, DataDirectory):
 
 	filenames = ['GDS_deep10_'+str(GalaxyNumber)+'_h.fits',
 		'GDS_deep10_'+str(GalaxyNumber)+'_j.fits',
@@ -330,7 +329,7 @@ def CompareResults():
 	plt.savefig('DeviationComparison.png', format='png', dpi=300)
 	plt.close()
 	
-def Compare2():
+def Compare2(DataFile):
 	
 	CombDat = Table.read('Full.fits', format='fits', hdu=1).to_pandas()
 	Spheroids = Table.read('Full.fits', format='fits', hdu=2).to_pandas()
@@ -412,7 +411,9 @@ def Compare2():
 	#plt.scatter(Irregular['M20_H'], Irregular['G_H'], c = 'r', label = 'Spheroids')
 	plt.show()
 
-SingleGalaxy(11647)#12228
+
+DataDirectory = r'/Users/samzimmerman/Documents/Capstone/Data/Goods-South-Deep10/'
+SingleGalaxy(11647, DataDirectory)#12228
 #BuildDatabase(subset = False)
 #CompareResults()
 #Compare2()

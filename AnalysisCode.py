@@ -21,10 +21,21 @@ from matplotlib.colors import LogNorm
 
 
 def normalize(L):
-    return L/np.max(L)
+    """
+    Simple function to normalize the list L.
+    Scales the list to be between 0 and 1.
+    """
+    return (L-np.min(L))/(np.max(L)-np.min(L))
 
 
 def reject_outliers(L, m=2):
+    """
+    Function to reject outliers beyond a specific value.
+    Takes in a list L and removes all values that are more than m median
+    deviations away from the median.
+    
+    The median is used to try and remove as many outliers as possible.
+    """
     d = np.abs(L - np.median(L))
     mdev = np.median(d)
     s = d/mdev if mdev else 0.
@@ -32,6 +43,11 @@ def reject_outliers(L, m=2):
 
 
 def gini(L, graph=False):
+    """
+    Calculates the Gini coefficient of a masked array L.
+    Calculates a sky value from the rest of the image.
+    graph allows you to plot the result of the analysis in a nice way.
+    """
     D = L.copy()
     D.mask = ma.nomask
     SKY = mode(D, axis=None)[0][0]
@@ -64,6 +80,12 @@ def gini(L, graph=False):
 
 
 def M20(D, graph=False):
+    """
+    Calculates the 20% moment of area of the masked array D.
+    graph plots the image with the 20% brightest pixels highlighted.
+    
+    More correlation work needs to be done.
+    """
     Nx, Ny = D.shape
     XX, YY = np.meshgrid(range(Nx), range(Ny))
     XX = np.compress(D.mask.flatten() == 0, XX)
@@ -107,6 +129,13 @@ def M20(D, graph=False):
 
 
 def Asymmetry(D, rp, graph=False):
+    """
+    Calculates the asymmetry of the image.
+    D is a masked array of the galaxy.
+    rp is the Petrosian radius (circular for now)
+    graph plots the difference between the image and the 180 degree rotation
+    along with a circle indicating 1.5 petrosian radii.
+    """
     Nx, Ny = D.shape
     Size = min(Nx, Ny)
     if Nx != Ny:
@@ -148,7 +177,7 @@ def Asymmetry(D, rp, graph=False):
         R2 = np.roll(R2, 1, axis=0)
     if graph:
         plt.figure()
-        plt.imshow(Asym[:, :, 0], vmin=0, vmax=2)
+        plt.imshow(np.abs(Asym[:, :, 0]), vmin=0, vmax=2)
         plt.colorbar()
         plt.savefig('AysmmetryDiscuss.png', format='png', dpi=300)
         plt.close()
@@ -177,7 +206,7 @@ def Asymmetry(D, rp, graph=False):
         U = ma.MaskedArray(D.data, mask=ma.nomask)
         Roll = np.roll(np.roll(np.rot90(U, k=2), int(Cx*2), axis=0),
                        int(Cy*2), axis=1)
-        plt.imshow(U - Roll, cmap='gray_r', interpolation='nearest')
+        plt.imshow(np.abs(U - Roll), cmap='gray_r', interpolation='nearest')
         Circle = plt.Circle((Size/2., Size/2.), rp*1.5, color='r', fill=False)
         ax = plt.gca()
         ax.add_artist(Circle)
@@ -193,6 +222,10 @@ def Asymmetry(D, rp, graph=False):
 
 
 def PetrosianRad(D, graph=False):
+    """
+    Calculates the Petrosian radius of the masked array D
+    graph does nothing, it's only there for compatibility purposes.
+    """
     L = ma.filled(D, 0)
     Ny, Nx = L.shape
     XX, YY = np.meshgrid(range(Nx), range(Ny))
@@ -207,6 +240,12 @@ def PetrosianRad(D, graph=False):
 
 
 def Concentration(L, rp, graph=False):
+    """
+    Calculates the Concentration from the masked array L and Petrosian
+    radius rp.
+    grpah plots the original image with two circles indicating the 20% and 80%
+    radii.
+    """
     Ny, Nx = L.shape
     XX, YY = np.meshgrid(range(Nx), range(Ny))
     Distance = np.sqrt(np.square(XX-(Nx-1)/2.) + np.square(YY-(Ny-1)/2.))
@@ -241,6 +280,13 @@ def Concentration(L, rp, graph=False):
 
 
 def Clumpiness(D, rp, graph=False):
+    """
+    Calculates the clumpiness of the masked array D based on the Petrosian
+    radius rp.
+    Smoothing is done using a square boxcar filter of size rp/4.
+    graph plots the difference between the smoothed image and the normal image,
+    with circles indicating the rp/4 and 1.5*rp regions of integration.
+    """
     L = D.copy()
     MASK = np.array(L.mask, copy=True)
     Ny, Nx = L.shape
@@ -273,6 +319,12 @@ def Clumpiness(D, rp, graph=False):
 
 
 def Multimode(D, graph=False):
+    """
+    Calculates the multimode of the masked array D. 
+    graph plots the image with the differently colored regions on top of it.
+    It's not super optimized, it makes a new plot every time it finds a new
+    maximum multimode value.
+    """
     N = D.count()
     Ny, Nx = D.shape
     RawData = ma.compressed(D)
@@ -304,6 +356,13 @@ def Multimode(D, graph=False):
 
 
 def Intensity(L, graph=False):
+    """
+    Finds the intensity value for a masked array L. 
+    graph plots the results of the watershed segmentation on top of
+    the raw image. 
+    Need to do work to generate a zero-gradient analysis instead of watershed
+    segmentation.
+    """
     Ny, Nx = L.shape
     threshold = abs(min(ma.compressed(L)))/2.
     RawData = ma.filled(L, 0)
@@ -345,6 +404,13 @@ def Intensity(L, graph=False):
 
 
 def Deviation(L, MaxCoord, graph=False):
+    """
+    Calculates the Deviation based on the masked array L and the
+    coordinates of the largest maxima from the Intensity statistic.
+    MaxCoord is he direct output from Intensity.
+    Graph simply indicates the distance from the center of light to the
+    maxima given by MaxCoord on top of the raw image data.
+    """
     XX, YY = np.meshgrid(range(L.shape[1]), range(L.shape[0]))
     N = L.count()
     Ny, Nx = L.shape

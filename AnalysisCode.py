@@ -39,11 +39,11 @@ def gini(L, graph=False):
     SKY = np.min(L)
     L -= SKY
     L.sort()
-    XbarABS = np.mean(np.abs(L))
+    XbarABS = np.sum(np.abs(L))
     Xbar = np.mean(L)
     n = len(L)
-    SUMMER = L * (2*(np.array(range(n))+1)-n-1)
-    SUMMERCORR = np.abs(L) * (2*(np.array(range(n))+1)-n-1)
+    SUMMER = L * (2*(np.array(range(n)))-n-1)
+    SUMMERCORR = np.abs(L) * (2*(np.array(range(n)))-n-1)
     if graph:
         plt.figure()
         xx = [float(n)/(len(L)-1) for n in xrange(len(L))]
